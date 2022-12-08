@@ -6,6 +6,10 @@ import requests from '../utils/requests'
 import { Movie } from '../typings'
 import Row from '../components/Row'
 import useAuth from '../hooks/useAuth'
+import { useRecoilValue } from 'recoil'
+import { modalState, movieState } from '../atoms/modalAtom'
+import Modal from '../components/Modal'
+import useList from '../hooks/useList'
 
 interface Props {
   netflixOriginals: Movie[]
@@ -27,12 +31,16 @@ const Home = ({
   romanceMovies,
   topRated,
   trendingNow, }: Props) => {
-    const {logout, loading} = useAuth()
+    const {loading, user} = useAuth()
+    const showModal = useRecoilValue(modalState)
+    const movie = useRecoilValue(movieState)
+    const list = useList(user?.uid)
 
     if (loading) return null
 
   return (
-    <div className="relative h-screen bg-gradient-to-b lg:h-[140vh]">
+    <div className={`relative h-screen bg-gradient-to-b lg:h-[140vh] ${
+      showModal && '!h-screen overflow-hidden'}`}>
       <Head>
         <title>Sepflix</title>
         <link rel="icon" href="/favicon.ico" />
@@ -45,13 +53,14 @@ const Home = ({
           <Row title="Top Rated" movies={topRated} />
           <Row title="Action Thrillers" movies={actionMovies} />
           <Row title="Comedies" movies={comedyMovies} />
+          {list.length > 0 && <Row title='My List' movies={list}/>}
           <Row title="Scary Movies" movies={horrorMovies} />
           <Row title="Romance Movies" movies={romanceMovies} />
           <Row title="Documentaries" movies={documentaries} />
         </section>
 
       </main>
-      
+      {showModal && <Modal/>}
     </div>
   )
 }
