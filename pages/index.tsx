@@ -1,28 +1,28 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import Header from '../components/Header'
-import Banner from '../components/Banner'
-import requests from '../utils/requests'
-import { Movie } from '../typings'
-import Row from '../components/Row'
-import useAuth from '../hooks/useAuth'
-import { useRecoilValue } from 'recoil'
-import { modalState, movieState } from '../atoms/modalAtom'
-import Modal from '../components/Modal'
-import useList from '../hooks/useList'
+import Head from "next/head";
+import Image from "next/image";
+import Header from "../components/Header";
+import Banner from "../components/Banner";
+import requests from "../utils/requests";
+import { Movie } from "../typings";
+import Row from "../components/Row";
+import useAuth from "../hooks/useAuth";
+import { useRecoilValue } from "recoil";
+import { modalState, movieState } from "../atoms/modalAtom";
+import Modal from "../components/Modal";
+import useList from "../hooks/useList";
 
 interface Props {
-  netflixOriginals: Movie[]
-  trendingNow: Movie[]
-  topRated: Movie[]
-  actionMovies: Movie[]
-  comedyMovies: Movie[]
-  horrorMovies: Movie[]
-  romanceMovies: Movie[]
-  documentaries: Movie[]
+  netflixOriginals: Movie[];
+  trendingNow: Movie[];
+  topRated: Movie[];
+  actionMovies: Movie[];
+  comedyMovies: Movie[];
+  horrorMovies: Movie[];
+  romanceMovies: Movie[];
+  documentaries: Movie[];
 }
 
-const Home = ({ 
+const Home = ({
   netflixOriginals,
   actionMovies,
   comedyMovies,
@@ -30,45 +30,47 @@ const Home = ({
   horrorMovies,
   romanceMovies,
   topRated,
-  trendingNow, }: Props) => {
-    const {loading, user} = useAuth()
-    const showModal = useRecoilValue(modalState)
-    const movie = useRecoilValue(movieState)
-    const list = useList(user?.uid)
+  trendingNow,
+}: Props) => {
+  const { loading, user } = useAuth();
+  const showModal = useRecoilValue(modalState);
+  const movie = useRecoilValue(movieState);
+  const list = useList(user?.uid);
 
-    if (loading) return null
+  if (loading) return null;
 
   return (
-    <div className={`relative h-screen bg-gradient-to-b lg:h-[140vh] ${
-      showModal && '!h-screen overflow-hidden'}`}>
+    <div
+      className={`relative h-screen bg-gradient-to-b lg:h-[140vh] ${
+        showModal && "!h-screen overflow-hidden"
+      }`}
+    >
       <Head>
         <title>Sepflix</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Header/>
+      <Header />
       <main className="relative pl-4 pb-24 lg:space-y-24 lg:pl-16">
-      <Banner netflixOriginals={netflixOriginals}/>
-      <section className='md:space-y-24'>
-      <Row title="Trending Now" movies={trendingNow} />
+        <Banner netflixOriginals={netflixOriginals} />
+        <section className="md:space-y-24">
+          {list.length > 0 && <Row title="My Favourites" movies={list} />}
+          <Row title="Trending Now" movies={trendingNow} />
           <Row title="Top Rated" movies={topRated} />
           <Row title="Action Thrillers" movies={actionMovies} />
           <Row title="Comedies" movies={comedyMovies} />
-          {list.length > 0 && <Row title='My List' movies={list}/>}
           <Row title="Scary Movies" movies={horrorMovies} />
           <Row title="Romance Movies" movies={romanceMovies} />
           <Row title="Documentaries" movies={documentaries} />
         </section>
-
       </main>
-      {showModal && <Modal/>}
+      {showModal && <Modal />}
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
 
-export const getServerSideProps = async() => {
-  
+export const getServerSideProps = async () => {
   const [
     netflixOriginals,
     trendingNow,
@@ -87,7 +89,7 @@ export const getServerSideProps = async() => {
     fetch(requests.fetchHorrorMovies).then((res) => res.json()),
     fetch(requests.fetchRomanceMovies).then((res) => res.json()),
     fetch(requests.fetchDocumentaries).then((res) => res.json()),
-  ]) 
+  ]);
 
   return {
     props: {
@@ -100,5 +102,5 @@ export const getServerSideProps = async() => {
       romanceMovies: romanceMovies.results,
       documentaries: documentaries.results,
     },
-  }
-}
+  };
+};

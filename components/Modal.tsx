@@ -23,7 +23,8 @@ import toast, { Toaster } from "react-hot-toast";
 
 function Modal() {
   const [showModal, setShowModal] = useRecoilState(modalState);
-  const [movie, setMovie] = useRecoilState(movieState);
+  const [fetchedMovie, setFetchedMovie] = useState<Movie>();
+  const [movie, setMovie] = useRecoilState<Movie>(movieState);
   const [trailer, setTrailer] = useState("");
   const [genres, setGenres] = useState<Genre[]>([]);
   const [muted, setMuted] = useState(true);
@@ -35,13 +36,13 @@ function Modal() {
     if (!movie) return;
 
     async function fetchMovie() {
-      const data = await fetch(
-        `https://api.themoviedb.org/3/${
-          movie?.media_type === "tv" ? "tv" : "movie"
-        }/${movie?.id}?api_key=${
-          process.env.NEXT_PUBLIC_API_KEY
-        }&language=en-US&append_to_response=videos`
-      ).then((response) => response.json());
+      console.log("Fetching movie");
+
+      const data = await fetch(getFetchUrl(movie!)).then((response) =>
+        response.json()
+      );
+
+      setFetchedMovie(data);
 
       if (data?.videos) {
         const index = data.videos.results.findIndex(
@@ -79,8 +80,21 @@ function Modal() {
       await deleteDoc(
         doc(db, "customers", user!.uid, "myList", movie?.id.toString()!)
       );
+
+      await fetch("/api/deleteMedia", {
+        body: JSON.stringify({
+          userId: user!.uid,
+          mediaId: movie?.id,
+          mediaType: movie?.media_type ?? "movie",
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+
       toast(
-        `${movie?.title || movie?.original_name} has been removed from My list`,
+        `"${
+          fetchedMovie?.title || fetchedMovie?.original_name
+        }" has been removed from your favorite list`,
         {
           duration: 8000,
         }
@@ -90,8 +104,29 @@ function Modal() {
         doc(db, "customers", user!.uid, "myList", movie?.id.toString()!),
         { ...movie }
       );
+
+      console.table({
+        userId: user!.uid,
+        movieId: movie?.id,
+        mediaType: movie?.media_type,
+        imageUrl: movie.backdrop_path,
+      });
+
+      await fetch("/api/addMovieToList", {
+        body: JSON.stringify({
+          userId: user!.uid,
+          movieId: movie?.id,
+          mediaType: movie?.media_type ?? "movie",
+          imageUrl: movie.backdrop_path,
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+
       toast(
-        `${movie?.title || movie?.original_name} has been added to My list`,
+        `"${
+          fetchedMovie?.title || fetchedMovie?.original_name
+        }" has been added the your favorite list`,
         {
           duration: 8000,
         }
@@ -156,10 +191,10 @@ function Modal() {
           <div className="space-y-6 text-lg">
             <div className="flex items-center space-x-2 text-sm">
               <p className="font-semibold text-green-400">
-                {movie!.vote_average * 10}% Match
+                Rating: {fetchedMovie?.vote_average.toFixed(1)}
               </p>
               <p className="font-light">
-                {movie?.release_date || movie?.first_air_date}
+                {fetchedMovie?.release_date || fetchedMovie?.first_air_date}
               </p>
               <div
                 className="flex h-4 items-center justify-center rounded border
@@ -170,7 +205,12 @@ function Modal() {
             </div>
 
             <div className="flex flex-col gap-x-10 gap-y-4 font-light md:flex-row">
-              <p className="w-5/6">{movie?.overview}</p>
+              <div className="w-5/6">
+                <h2 className="text-2xl font-bold pb-3">
+                  {fetchedMovie?.title || fetchedMovie?.name}
+                </h2>
+                <p>{fetchedMovie?.overview}</p>
+              </div>
               <div className="flex flex-col space-y-3 text-sm">
                 <div>
                   <span className="text-[gray]">Genres: </span>
@@ -179,11 +219,11 @@ function Modal() {
 
                 <div>
                   <span className="text-[gray]">Original language: </span>
-                  {movie?.original_language}
+                  {fetchedMovie?.original_language.toUpperCase()}
                 </div>
                 <div>
                   <span className="text-[gray]">Total votes: </span>
-                  {movie?.vote_count}
+                  {fetchedMovie?.vote_count}
                 </div>
               </div>
             </div>
@@ -193,5 +233,12 @@ function Modal() {
     </MuiModal>
   );
 }
+
+const getFetchUrl = (movie: Movie): string =>
+  `https://api.themoviedb.org/3/${movie.media_type === "tv" ? "tv" : "movie"}/${
+    movie.id
+  }?api_key=${
+    process.env.NEXT_PUBLIC_API_KEY
+  }&language=en-US&append_to_response=videos`;
 
 export default Modal;
