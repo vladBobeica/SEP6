@@ -25,17 +25,21 @@ function Header() {
 
   return (
     <header className={`${isScrolled && "bg-[#141414]"}`}>
-      <div className="flex items-center space-x-2 md:space-x-10">
-        <img
-          src="https://i.postimg.cc/6p42F4np/Netflix-2015-logo.png"
-          width={100}
-          height={100}
-          className="cursor-pointer object-contain"
-        />
-      </div>
+      <Link href="/">
+        <div className="flex items-center space-x-2 md:space-x-10">
+          <img
+            src="https://i.postimg.cc/6p42F4np/Netflix-2015-logo.png"
+            width={100}
+            height={100}
+            className="cursor-pointer object-contain"
+          />
+        </div>
+      </Link>
 
       <div className="flex items-center space-x-4 text-sm font-light">
-        <SearchIcon className="hidden h-6 w-6 sm:inline" />
+        <Link href="/search">
+          <SearchIcon className="hidden h-6 w-6 sm:inline" />
+        </Link>
 
         <Link href="/account">
           <img

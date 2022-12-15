@@ -36,3 +36,25 @@
     }
 
 }
+
+.search {
+    padding-bottom: 3rem;
+    padding-top: 5rem;
+}
+
+.search__form {
+    display: grid;
+    place-self: center;
+}
+
+.search__input {
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    outline: none;
+}
+
+.search__input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
