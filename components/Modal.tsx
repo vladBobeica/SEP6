@@ -24,7 +24,7 @@ import toast, { Toaster } from "react-hot-toast";
 function Modal() {
   const [showModal, setShowModal] = useRecoilState(modalState);
   const [fetchedMovie, setFetchedMovie] = useState<Movie>();
-  const [movie, setMovie] = useRecoilState<Movie>(movieState);
+  const [movie, setMovie] = useRecoilState(movieState);
   const [trailer, setTrailer] = useState("");
   const [genres, setGenres] = useState<Genre[]>([]);
   const [muted, setMuted] = useState(true);
@@ -38,9 +38,13 @@ function Modal() {
     async function fetchMovie() {
       console.log("Fetching movie");
 
-      const data = await fetch(getFetchUrl(movie!)).then((response) =>
-        response.json()
-      );
+      const data = await fetch(
+        `https://api.themoviedb.org/3/${
+          movie?.media_type === "tv" ? "tv" : "movie"
+        }/${movie?.id}?api_key=${
+          process.env.NEXT_PUBLIC_API_KEY
+        }&language=en-US&append_to_response=videos`
+      ).then((response) => response.json());
 
       setFetchedMovie(data);
 
@@ -109,7 +113,7 @@ function Modal() {
         userId: user!.uid,
         movieId: movie?.id,
         mediaType: movie?.media_type,
-        imageUrl: movie.backdrop_path,
+        imageUrl: movie?.backdrop_path ?? "",
       });
 
       await fetch("/api/addMovieToList", {
@@ -117,7 +121,7 @@ function Modal() {
           userId: user!.uid,
           movieId: movie?.id,
           mediaType: movie?.media_type ?? "movie",
-          imageUrl: movie.backdrop_path,
+          imageUrl: movie?.backdrop_path ?? "",
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
@@ -233,12 +237,5 @@ function Modal() {
     </MuiModal>
   );
 }
-
-const getFetchUrl = (movie: Movie): string =>
-  `https://api.themoviedb.org/3/${movie.media_type === "tv" ? "tv" : "movie"}/${
-    movie.id
-  }?api_key=${
-    process.env.NEXT_PUBLIC_API_KEY
-  }&language=en-US&append_to_response=videos`;
 
 export default Modal;

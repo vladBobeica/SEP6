@@ -1,11 +1,11 @@
-import { FavouriteMovie, Movie } from "../typings";
+import { Movie } from "../typings";
 import Image from "next/image";
 import { useRecoilState } from "recoil";
 import { modalState, movieState } from "../atoms/modalAtom";
 import { DocumentData } from "firebase/firestore";
 
 interface Props {
-  movie: Movie | FavouriteMovie | DocumentData;
+  movie: Movie | DocumentData;
 }
 
 function Thumbnail({ movie }: Props) {
@@ -20,25 +20,14 @@ function Thumbnail({ movie }: Props) {
         setShowModal(true);
       }}
     >
-      {"image_url" in movie ? (
-        <Image
-          src={`https://image.tmdb.org/t/p/w500${
-            (movie as FavouriteMovie).image_url
-          }`}
-          className="rounded-sm object-cover md:rounded"
-          layout="fill"
-          alt=""
-        />
-      ) : (
-        <Image
-          src={`https://image.tmdb.org/t/p/w500${
-            (movie as Movie).backdrop_path || (movie as Movie).poster_path
-          }`}
-          className="rounded-sm object-cover md:rounded"
-          layout="fill"
-          alt=""
-        />
-      )}
+      <Image
+        src={`https://image.tmdb.org/t/p/w500${
+          movie.backdrop_path || movie.poster_path
+        }`}
+        className="rounded-sm object-cover md:rounded"
+        layout="fill"
+        alt=""
+      />
     </div>
   );
 }
